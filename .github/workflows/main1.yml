@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Download dependencies
+      run: python download_deps.py
+
+    - name: Build
+      run: msbuild windows-touchpad.sln
+
+    - name: Copy DLLs and assets
+      run: python build_scripts/copy_assets.py
+
+    - name: Show build directory structure
+      run: tree . /a /f
+
+    - name: upload artifacts
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: windows-touchpad-binaries
+        path: x64/Debug/*
